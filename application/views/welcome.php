@@ -93,8 +93,10 @@
         </p>
 
         <ol>
-            <li><a href="<?php echo site_url('api/wp'); ?>">Wajib Pajak</a> - defaulting to JSON</li>
-            <li><a href="<?php echo site_url('api/op'); ?>">Objek Pajak</a> - defaulting to JSON</li>
+            <li><a href="<?php echo site_url('api/pendataan/wp'); ?>">Wajib Pajak/Kelurahan</a> - defaulting to JSON</li>
+            <li><a href="<?php echo site_url('api/pendataan/wp/group/1'); ?>">Wajib Pajak/Kecamatan</a> - defaulting to JSON</li>
+            <li><a href="<?php echo site_url('api/pendataan/op'); ?>">Objek Pajak/Kelurahan</a> - defaulting to JSON</li>
+            <li><a href="<?php echo site_url('api/pendataan/op/group/1'); ?>">Objek Pajak/Kecamatan</a> - defaulting to JSON</li>
             <li><a href="<?php echo site_url('api/transaksi/ketetapan/awal/20160101/akhir/20160131'); ?>">Ketetapan</a> - defaulti JSON<br>
                 Parameter Input :
                 <ol>
@@ -137,14 +139,6 @@
                     <li>total: </li>
                 </ol>
             </li>
-            Contoh Output:
-           <p> [{"kode":"1","uraian":"HOTEL","pokok":"45540475314","denda":"0","bunga":"0","total":"4554047533"},
-                <br>{"kode":"2","uraian":"RESTORAN","pokok":"210545042503","denda":"113263707","bunga":"113858491","total":"21055099046"},
-                <br>{"kode":"3","uraian":"HIBURAN","pokok":"14320149835","denda":"0","bunga":"0","total":"1963034318"},
-                <br>{"kode":"4","uraian":"REKLAME","pokok":"3447507278","denda":"9511106","bunga":"10039346","total":"871886586"},
-                <br>{"kode":"6","uraian":"PARKIR","pokok":"20162461285","denda":"0","bunga":"0","total":"5040615321"},
-                <br>{"kode":"7","uraian":"AIR TANAH","pokok":"2335793375","denda":"6682615","bunga":"6682615","total":"473841291"}]
-           </p> 
         </ol>
             <p>Catatan:
             <ul>

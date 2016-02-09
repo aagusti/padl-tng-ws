@@ -63,3 +63,5 @@ $route['api/example/users/(:num)(\.)([a-zA-Z0-9_-]+)(.*)'] = 'api/example/users/
 
 $route['api/transaksi/ketetapan/(:any)'] = 'api/transaksi/ketetapan/awal/$1'; 
 $route['api/transaksi/realisasi/(:any)'] = 'api/transaksi/realisasi/awal/$1/akhir/$2'; 
+$route['api/pendataan/wp/{:any}'] = 'api/pendataan/wp/group/$1'; 
+$route['api/pendataan/op/(:any)'] = 'api/pendataan/op/group/$1'; 

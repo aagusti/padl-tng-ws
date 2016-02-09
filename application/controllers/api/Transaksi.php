@@ -75,8 +75,8 @@ class Transaksi extends REST_Controller {
         $sql = "SELECT b.usaha_id kode, b.jenis_usaha uraian, 
                        sum(a.jml_bayar-a.denda-a.bunga) pokok, sum(a.denda) as denda, sum(a.bunga) as bunga, 
                        sum(a.jml_bayar) as total
-                FROM pad_sspd a 
-                  INNER JOIN pad_invoice b
+                FROM pad.pad_sspd a 
+                  INNER JOIN public.pad_invoice b
                     on a.invoice_id=b.id
                 WHERE TO_CHAR(a.sspdtgl,'YYYYMMDD') BETWEEN '20160101' AND '20160131'
                 GROUP BY usaha_id, jenis_usaha
