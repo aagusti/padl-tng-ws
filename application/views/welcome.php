@@ -98,6 +98,8 @@
             <li><a href="<?php echo site_url('api/pendataan/op'); ?>">Objek Pajak/Kelurahan</a> - defaulting to JSON</li>
             <li><a href="<?php echo site_url('api/pendataan/op/group/1'); ?>">Objek Pajak/Kecamatan</a> - defaulting to JSON</li>
             <li><a href="<?php echo site_url('api/transaksi/ketetapan/awal/20160101/akhir/20160131'); ?>">Ketetapan</a> - defaulti JSON<br>
+            <li><a href="<?php echo site_url('api/transaksi/ketetapan/awal/20160101/akhir/20160131/group/1'); ?>">Ketetapan Perkecamatan</a> - defaulti JSON<br>
+            <li><a href="<?php echo site_url('api/transaksi/ketetapan/awal/20160101/akhir/20160131/group/2'); ?>">Ketetapan Perkelurahan</a> - defaulti JSON<br>
                 Parameter Input :
                 <ol>
                     <li>(awal) Periode Awal : 'YYYYMMDD'</li>
@@ -124,7 +126,9 @@
            </p> 
             <li><a href="<?php echo site_url('api/transaksi/realisasi/awal/20160101/akhir/20160131'); ?>">Realisasi</a> - defaulti JSON<br>
                 Parameter Input :
-                <ol>
+            <li><a href="<?php echo site_url('api/transaksi/realisasi/awal/20160101/akhir/20160131/group/1'); ?>">Realisasi Perkecamatan</a> - defaulti JSON<br>
+            <li><a href="<?php echo site_url('api/transaksi/realisasi/awal/20160101/akhir/20160131/group/2'); ?>">Realisasi Perkelurahan</a> - defaulti JSON<br>
+                            <ol>
                     <li>(awal) Periode Awal : 'YYYYMMDD'</li>
                     <li>(akhir) Periode Akhir : 'YYYYMMDD'</li>
                     

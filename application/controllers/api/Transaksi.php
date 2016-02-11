@@ -40,13 +40,71 @@ class Transaksi extends REST_Controller {
         $awal = preg_replace("/[^0-9]/","",$this->get('awal'));
         $akhir = preg_replace("/[^0-9]/","",$this->get('akhir'));
         $query = Null;
-        $sql = "SELECT usaha_id kode, jenis_usaha uraian, 
-                        sum(pokok) pokok, sum(denda) as denda, sum(bunga) as bunga, sum(total) as total
-                FROM pad_invoice
-                WHERE TO_CHAR(created,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
-                GROUP BY usaha_id, jenis_usaha
+        $sql = "SELECT inv.usaha_id kode, inv.jenis_usaha uraian, 
+                        sum(inv.pokok) pokok, sum(inv.denda) as denda, sum(inv.bunga) as bunga, sum(inv.total) as total
+                FROM public.pad_invoice inv
+                WHERE TO_CHAR(inv.created,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                GROUP BY inv.usaha_id, inv.jenis_usaha
                 ORDER BY 1,2 ";  
         
+        $group = $this->get('group');
+        if ($group) {
+            $group = (int)$group;
+            if ($group==1){
+                $sql = "SELECT kode, uraian, kd_kecamatan, nm_kecamatan, sum(pokok) pokok, sum(denda) denda, sum(bunga) bunga,
+                               sum(total) total 
+                        FROM( SELECT 1 source, inv.usaha_id kode, inv.jenis_usaha uraian, kec.kode as kd_kecamatan, 
+                                     kec.nama as nm_kecamatan, sum(inv.pokok) pokok, sum(inv.denda) as denda, 
+                                     sum(inv.bunga) as bunga, sum(inv.total) as total
+                              FROM public.pad_invoice inv
+                                   INNER JOIN pad.pad_spt spt ON inv.source_id=spt.id
+                                   INNER JOIN pad.pad_customer_usaha cu on cu.id = spt.customer_usaha_id
+                                   INNER JOIN pad.pad_kecamatan kec ON cu.kecamatan_id = kec.id
+                              WHERE inv.source_nama='pad_spt' AND TO_CHAR(inv.created,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                              GROUP BY 1,2,3,4,5
+                              UNION 
+                              SELECT 2 source, inv.usaha_id kode, inv.jenis_usaha uraian, kec.kode as kd_kecamatan, kec.nama as nm_kecamatan,
+                                      sum(inv.pokok) pokok, sum(inv.denda) as denda, sum(inv.bunga) as bunga, sum(inv.total) as total
+                              FROM public.pad_invoice inv
+                                   INNER JOIN pad.pad_stpd stp ON inv.source_id=stp.id
+                                   INNER JOIN pad.pad_spt spt ON stp.spt_id=spt.id
+                                   INNER JOIN pad.pad_customer_usaha cu on cu.id = spt.customer_usaha_id
+                                   INNER JOIN pad.pad_kecamatan kec ON cu.kecamatan_id = kec.id
+                              WHERE inv.source_nama='pad_stpd' AND TO_CHAR(inv.created,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                              GROUP BY 1,2,3,4,5) AS drv
+                        GROUP BY 1,2,3,4
+                        ORDER BY 1,2,3,4 ";  
+            }  
+            elseif ($group==2){
+                $sql = "SELECT kode, uraian, kd_kecamatan, nm_kecamatan, kd_kelurahan, nm_kelurahan,
+                               sum(pokok) pokok, sum(denda) denda, sum(bunga) bunga, sum(total) total 
+                        FROM( SELECT 1 source, inv.usaha_id kode, inv.jenis_usaha uraian, kec.kode as kd_kecamatan, 
+                                     kec.nama as nm_kecamatan, kel.kode as kd_kelurahan, 
+                                     kel.nama as nm_kelurahan, sum(inv.pokok) pokok, sum(inv.denda) as denda, 
+                                     sum(inv.bunga) as bunga, sum(inv.total) as total
+                              FROM public.pad_invoice inv
+                                   INNER JOIN pad.pad_spt spt ON inv.source_id=spt.id
+                                   INNER JOIN pad.pad_customer_usaha cu on cu.id = spt.customer_usaha_id
+                                   INNER JOIN pad.pad_kecamatan kec ON cu.kecamatan_id = kec.id
+                                   INNER JOIN pad.pad_kelurahan kel ON cu.kelurahan_id = kel.id
+                              WHERE inv.source_nama='pad_spt' AND TO_CHAR(inv.created,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                              GROUP BY 1,2,3,4,5,6,7
+                              UNION 
+                              SELECT 2 source, inv.usaha_id kode, inv.jenis_usaha uraian, kec.kode as kd_kecamatan, 
+                                       kec.nama as nm_kecamatan, kel.kode as kd_kelurahan, kel.nama as nm_kelurahan, 
+                                      sum(inv.pokok) pokok, sum(inv.denda) as denda, sum(inv.bunga) as bunga, sum(inv.total) as total
+                              FROM public.pad_invoice inv
+                                   INNER JOIN pad.pad_stpd stp ON inv.source_id=stp.id
+                                   INNER JOIN pad.pad_spt spt ON stp.spt_id=spt.id
+                                   INNER JOIN pad.pad_customer_usaha cu on cu.id = spt.customer_usaha_id
+                                   INNER JOIN pad.pad_kecamatan kec ON cu.kecamatan_id = kec.id
+                                   INNER JOIN pad.pad_kelurahan kel ON cu.kelurahan_id = kel.id
+                              WHERE inv.source_nama='pad_stpd' AND TO_CHAR(inv.created,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                              GROUP BY 1,2,3,4,5,6,7) AS drv
+                        GROUP BY 1,2,3,4,5,6
+                        ORDER BY 1,2,3,4,5,6 ";                
+            } 
+        }
         $query = $this->db->query($sql)->result_array();
         
         
@@ -78,11 +136,83 @@ class Transaksi extends REST_Controller {
                 FROM pad.pad_sspd a 
                   INNER JOIN public.pad_invoice b
                     on a.invoice_id=b.id
-                WHERE TO_CHAR(a.sspdtgl,'YYYYMMDD') BETWEEN '20160101' AND '20160131'
+                WHERE TO_CHAR(a.sspdtgl,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
                 GROUP BY usaha_id, jenis_usaha
                 ORDER BY 1,2
                 ";  
-                        
+        $group = $this->get('group');
+        if ($group) {
+            $group = (int)$group;
+            if ($group==1){
+                $sql = "SELECT kode, uraian, kd_kecamatan, nm_kecamatan, 
+                               sum(pokok) pokok, sum(denda) denda, sum(bunga) bunga, sum(total) total 
+                        FROM( SELECT 1 source, inv.usaha_id kode, inv.jenis_usaha uraian, 
+                                     kec.kode as kd_kecamatan, kec.nama as nm_kecamatan,
+                                     sum(a.jml_bayar-a.denda-a.bunga) pokok, sum(a.denda) as denda, sum(a.bunga) as bunga, 
+                                     sum(a.jml_bayar) as total
+                              FROM pad.pad_sspd a 
+                                   INNER JOIN public.pad_invoice inv
+                                              on a.invoice_id=inv.id
+                                   INNER JOIN pad.pad_spt spt ON inv.source_id=spt.id
+                                   INNER JOIN pad.pad_customer_usaha cu on cu.id = spt.customer_usaha_id
+                                   INNER JOIN pad.pad_kecamatan kec ON cu.kecamatan_id = kec.id
+                              WHERE inv.source_nama='pad_spt' AND TO_CHAR(a.sspdtgl,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                              GROUP BY 1,2,3,4,5
+                              UNION 
+                              SELECT 1 source, inv.usaha_id kode, inv.jenis_usaha uraian,
+                                     kec.kode as kd_kecamatan, kec.nama as nm_kecamatan,                              
+                                     sum(a.jml_bayar-a.denda-a.bunga) pokok, sum(a.denda) as denda, sum(a.bunga) as bunga, 
+                                     sum(a.jml_bayar) as total
+                              FROM pad.pad_sspd a 
+                                   INNER JOIN public.pad_invoice inv
+                                              on a.invoice_id=inv.id
+                                   INNER JOIN pad.pad_stpd stp ON inv.source_id=stp.id
+                                   INNER JOIN pad.pad_spt spt ON stp.spt_id=spt.id
+                                   INNER JOIN pad.pad_customer_usaha cu on cu.id = spt.customer_usaha_id
+                                   INNER JOIN pad.pad_kecamatan kec ON cu.kecamatan_id = kec.id
+                              WHERE inv.source_nama='pad_stpd' AND TO_CHAR(a.sspdtgl,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                              GROUP BY 1,2,3,4,5) AS drv
+                        GROUP BY 1,2,3,4
+                        ORDER BY 1,2,3,4 ";  
+            }  
+            elseif ($group==2){
+                $sql = "SELECT kode, uraian, kd_kecamatan, nm_kecamatan, kd_kelurahan, nm_kelurahan, 
+                               sum(pokok) pokok, sum(denda) denda, sum(bunga) bunga, sum(total) total 
+                        FROM( SELECT 1 source, inv.usaha_id kode, inv.jenis_usaha uraian, 
+                                     kec.kode as kd_kecamatan, kec.nama as nm_kecamatan,
+                                     kel.kode as kd_kelurahan, kel.nama as nm_kelurahan, 
+                                     sum(a.jml_bayar-a.denda-a.bunga) pokok, sum(a.denda) as denda, sum(a.bunga) as bunga, 
+                                     sum(a.jml_bayar) as total
+                              FROM pad.pad_sspd a 
+                                   INNER JOIN public.pad_invoice inv
+                                              on a.invoice_id=inv.id
+                                   INNER JOIN pad.pad_spt spt ON inv.source_id=spt.id
+                                   INNER JOIN pad.pad_customer_usaha cu on cu.id = spt.customer_usaha_id
+                                   INNER JOIN pad.pad_kecamatan kec ON cu.kecamatan_id = kec.id
+                                   INNER JOIN pad.pad_kelurahan kel ON cu.kelurahan_id = kel.id
+                              WHERE inv.source_nama='pad_spt' AND TO_CHAR(a.sspdtgl,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                              GROUP BY 1,2,3,4,5,6,7
+                              UNION 
+                              SELECT 1 source, inv.usaha_id kode, inv.jenis_usaha uraian,
+                                     kec.kode as kd_kecamatan, kec.nama as nm_kecamatan,                              
+                                     kel.kode as kd_kelurahan, kel.nama as nm_kelurahan, 
+                                     sum(a.jml_bayar-a.denda-a.bunga) pokok, sum(a.denda) as denda, sum(a.bunga) as bunga, 
+                                     sum(a.jml_bayar) as total
+                              FROM pad.pad_sspd a 
+                                   INNER JOIN public.pad_invoice inv
+                                              on a.invoice_id=inv.id
+                                   INNER JOIN pad.pad_stpd stp ON inv.source_id=stp.id
+                                   INNER JOIN pad.pad_spt spt ON stp.spt_id=spt.id
+                                   INNER JOIN pad.pad_customer_usaha cu on cu.id = spt.customer_usaha_id
+                                   INNER JOIN pad.pad_kecamatan kec ON cu.kecamatan_id = kec.id
+                                   INNER JOIN pad.pad_kelurahan kel ON cu.kelurahan_id = kel.id
+                              WHERE inv.source_nama='pad_stpd' AND TO_CHAR(a.sspdtgl,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                              GROUP BY 1,2,3,4,5,6,7) AS drv
+                        GROUP BY 1,2,3,4,5,6
+                        ORDER BY 1,2,3,4,5,6 ";  
+            } 
+        }
+                       
         $query = $this->db->query($sql)->result_array();
         
         if($query) {
