@@ -110,7 +110,7 @@ $config['rest_realm'] = 'REST API';
 |           authorization key
 |
 */
-$config['rest_auth'] = 'basic';
+$config['rest_auth'] = FALSE;
 
 /*
 |--------------------------------------------------------------------------

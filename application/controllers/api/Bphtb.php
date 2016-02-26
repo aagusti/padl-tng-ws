@@ -143,7 +143,7 @@ class Bphtb extends REST_Controller {
                 $sql = "SELECT '0000' as kode, 'BPHTB' as uraian, a.kd_kecamatan, b.nm_kecamatan,
                                sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, sum(a.bayar) as total
                         FROM bphtb.bphtb_bank a 
-                            left join ref_kecamatan b
+                            left join pbb.ref_kecamatan b
                                   on a.kd_propinsi=b.kd_propinsi and a.kd_dati2=b.kd_dati2 
                                      and a.kd_kecamatan=b.kd_kecamatan
                         WHERE TO_CHAR(a.tanggal,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
@@ -152,18 +152,18 @@ class Bphtb extends REST_Controller {
             }  
             elseif ($group==2){
                 $sql = "SELECT '0000' as kode, 'BPHTB' as uraian, a.kd_kecamatan, b.nm_kecamatan,
-                               c.kd_kecamatan, d.kd_kecamatan,
+                               c.kd_kelurahan, c.nm_kelurahan,
                                sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, sum(a.bayar) as total
                         FROM bphtb.bphtb_bank a 
-                            left join ref_kecamatan b
+                            left join pbb.ref_kecamatan b
                                   on a.kd_propinsi=b.kd_propinsi and a.kd_dati2=b.kd_dati2 
                                      and a.kd_kecamatan=b.kd_kecamatan
-                            left join ref_kelurahan c
+                            left join pbb.ref_kelurahan c
                                   on a.kd_propinsi=c.kd_propinsi and a.kd_dati2=c.kd_dati2 
                                      and a.kd_kecamatan=c.kd_kecamatan and a.kd_kelurahan=c.kd_kelurahan
                         WHERE TO_CHAR(a.tanggal,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
-                        GROUP BY 1,2,3,4
-                        ORDER BY 1,2,3,4 ";  
+                        GROUP BY 1,2,3,4,5,6
+                        ORDER BY 1,2,3,4,5,6 ";  
             }  
         }
                        
