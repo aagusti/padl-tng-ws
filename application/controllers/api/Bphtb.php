@@ -121,6 +121,50 @@ class Bphtb extends REST_Controller {
         }
     }
     
+    public function realisasibykode_get(){
+        //||!$this->get('kode'))
+        if(!$this->get('awal')||!$this->get('akhir'))
+           $this->response([
+                    'status' => FALSE,
+                    'message' => 'Invalid Parameter'
+                  ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
+                
+        $awal = preg_replace("/[^0-9]/","",$this->get('awal'));
+        $akhir = preg_replace("/[^0-9]/","",$this->get('akhir'));
+        $query = Null;
+        $sql = "SELECT '0000' as kode, 'BPHTB' as uraian, count(*) jumlah, 
+                       sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, 
+                       sum(a.bayar) as total
+                FROM bphtb.bphtb_bank a 
+                WHERE TO_CHAR(a.tanggal,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                ";  
+        $group = $this->get('group');
+        if ($group) {
+            $group = (int)$group;
+            $kode = $this->get('kode');
+            $kd_kec = substr($kode,0,3);
+            $kd_kel = substr($kode,3);
+            if ($group==1){
+                $sql .= " AND a.kd_kecamatan='$kd_kec'";                        
+            }  
+            elseif ($group==2){
+                $sql .= " AND a.kd_kecamatan='$kd_kec' AND a.kd_kelurahan='$kd_kel' ";                        
+            }  
+        }
+        $query = $this->db->query($sql)->result_array();
+        
+        if($query) {
+            //$wil = array('wilayah' => LICENSE_TO);
+            $ret = $query; // array_merge($query, $wil);
+            $this->response($ret, 200); // 200 being the HTTP response code
+        } else {
+           $this->response([
+                    'status' => FALSE,
+                    'message' => 'Data Not Found'
+                  ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
+        }
+    }
+    
     public function realisasi_get(){
         if(!$this->get('awal')||!$this->get('akhir'))
            $this->response([
@@ -131,7 +175,8 @@ class Bphtb extends REST_Controller {
         $awal = preg_replace("/[^0-9]/","",$this->get('awal'));
         $akhir = preg_replace("/[^0-9]/","",$this->get('akhir'));
         $query = Null;
-        $sql = "SELECT '0000' as kode, 'BPHTB' as uraian, sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, 
+        $sql = "SELECT '0000' as kode, 'BPHTB' as uraian, count(*) jumlah, 
+                       sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, 
                        sum(a.bayar) as total
                 FROM bphtb.bphtb_bank a 
                 WHERE TO_CHAR(a.tanggal,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
@@ -139,6 +184,10 @@ class Bphtb extends REST_Controller {
         $group = $this->get('group');
         if ($group) {
             $group = (int)$group;
+            $kode = $this->get('kode');
+            $kd_kec = substr($kode,0,3);
+            $kd_kel = substr($kode,3);   
+            
             if ($group==1){
                 $sql = "SELECT '0000' as kode, 'BPHTB' as uraian, a.kd_kecamatan, b.nm_kecamatan,
                                sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, sum(a.bayar) as total
@@ -167,6 +216,131 @@ class Bphtb extends REST_Controller {
             }  
         }
                        
+        $query = $this->db->query($sql)->result_array();
+        
+        if($query) {
+            //$wil = array('wilayah' => LICENSE_TO);
+            $ret = $query; // array_merge($query, $wil);
+            $this->response($ret, 200); // 200 being the HTTP response code
+        } else {
+           $this->response([
+                    'status' => FALSE,
+                    'message' => 'Data Not Found'
+                  ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
+        }
+    }    
+    
+    public function monthly_get(){
+        if(!$this->get('awal')||!$this->get('akhir'))
+           $this->response([
+                    'status' => FALSE,
+                    'message' => 'Invalid Parameter'
+                  ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
+                
+        $awal = preg_replace("/[^0-9]/","",$this->get('awal'));
+        $akhir = preg_replace("/[^0-9]/","",$this->get('akhir'));
+        $query = Null;
+        $sql = "SELECT TO_CHAR(a.tanggal,'MM') as kode, TO_CHAR(a.tanggal,'MON')  as bulan, sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, 
+                       sum(a.bayar) as total
+                FROM bphtb.bphtb_bank a 
+                WHERE TO_CHAR(a.tanggal,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                GROUP BY TO_CHAR(a.tanggal,'MM'),  TO_CHAR(a.tanggal,'MON')
+                ORDER BY TO_CHAR(a.tanggal,'MM')
+                ";  
+        $group = $this->get('group');
+        if ($group) {
+            $group = (int)$group;
+            $kode = $this->get('kode');
+            $kd_kec = substr($kode,0,3);
+            $kd_kel = substr($kode,3);            
+            if ($group==1){
+                $sql = "SELECT TO_CHAR(a.tanggal,'MM') as kode, TO_CHAR(a.tanggal,'MON')  as bulan, sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, 
+                       sum(a.bayar) as total
+                FROM bphtb.bphtb_bank a 
+                WHERE TO_CHAR(a.tanggal,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                AND a.kd_kecamatan='$kd_kec'
+                GROUP BY TO_CHAR(a.tanggal,'MM'),  TO_CHAR(a.tanggal,'MON')
+                ORDER BY TO_CHAR(a.tanggal,'MM')";  
+            }  
+            elseif ($group==2){
+                $sql = "SELECT TO_CHAR(a.tanggal,'MM') as kode, TO_CHAR(a.tanggal,'MON')  as bulan, sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, 
+                       sum(a.bayar) as total
+                FROM bphtb.bphtb_bank a 
+                WHERE TO_CHAR(a.tanggal,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                AND a.kd_kecamatan='$kd_kec' AND a.kd_kelurahan='$kd_kel'
+                GROUP BY TO_CHAR(a.tanggal,'MM'),  TO_CHAR(a.tanggal,'MON')
+                ORDER BY TO_CHAR(a.tanggal,'MM')"; 
+            }  
+        }
+                       
+        $query = $this->db->query($sql)->result_array();
+        
+        if($query) {
+            //$wil = array('wilayah' => LICENSE_TO);
+            $ret = $query; // array_merge($query, $wil);
+            $this->response($ret, 200); // 200 being the HTTP response code
+        } else {
+           $this->response([
+                    'status' => FALSE,
+                    'message' => 'Data Not Found'
+                  ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
+        }
+    }    
+    public function realisasibywil_get(){
+        //||!$this->get('kode'))
+        if(!$this->get('awal')||!$this->get('akhir'))
+           $this->response([
+                    'status' => FALSE,
+                    'message' => 'Invalid Parameter'
+                  ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
+                
+        $awal = preg_replace("/[^0-9]/","",$this->get('awal'));
+        $akhir = preg_replace("/[^0-9]/","",$this->get('akhir'));
+        $query = Null;
+        $sql = "SELECT '0000' as kode, 'BPHTB' as uraian, a.kd_kecamatan, b.nm_kecamatan,
+                       count(*) jumlah, sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, sum(a.bayar) as total
+                FROM bphtb.bphtb_bank a 
+                    left join pbb.ref_kecamatan b
+                          on a.kd_propinsi=b.kd_propinsi and a.kd_dati2=b.kd_dati2 
+                             and a.kd_kecamatan=b.kd_kecamatan
+                WHERE TO_CHAR(a.tanggal,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                GROUP BY 1,2,3,4
+                ORDER BY 1,2,3,4 ";   
+        $group = $this->get('group');
+        if ($group) {
+            #$group = (int)$group;
+            #die($group);
+            
+            $kode = $this->get('kode');
+            $kd_kec = substr($kode,0,3);
+            $kd_kel = substr($kode,3);
+            if ($group==1){
+                        $sql = "SELECT '0000' as kode, 'BPHTB' as uraian, a.kd_kecamatan, b.nm_kecamatan,
+                       count(*) jumlah, sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, sum(a.bayar) as total
+                FROM bphtb.bphtb_bank a 
+                    left join pbb.ref_kecamatan b
+                          on a.kd_propinsi=b.kd_propinsi and a.kd_dati2=b.kd_dati2 
+                             and a.kd_kecamatan=b.kd_kecamatan
+                WHERE TO_CHAR(a.tanggal,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                GROUP BY 1,2,3,4
+                ORDER BY 1,2,3,4 ";   
+            } else {
+                    $sql = "SELECT '0000' as kode, 'BPHTB' as uraian, a.kd_kecamatan, b.nm_kecamatan,
+                               c.kd_kelurahan, c.nm_kelurahan,
+                               count(*) jumlah, sum(a.bayar-a.denda) pokok, sum(a.denda) as denda, sum(a.bayar) as total
+                        FROM bphtb.bphtb_bank a 
+                            left join pbb.ref_kecamatan b
+                                  on a.kd_propinsi=b.kd_propinsi and a.kd_dati2=b.kd_dati2 
+                                     and a.kd_kecamatan=b.kd_kecamatan
+                            left join pbb.ref_kelurahan c
+                                  on a.kd_propinsi=c.kd_propinsi and a.kd_dati2=c.kd_dati2 
+                                     and a.kd_kecamatan=c.kd_kecamatan and a.kd_kelurahan=c.kd_kelurahan
+                        WHERE TO_CHAR(a.tanggal,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'
+                              AND a.kd_kecamatan='$kd_kec' 
+                        GROUP BY 1,2,3,4,5,6
+                        ORDER BY 1,2,3,4,5,6 "; 
+            }
+        }
         $query = $this->db->query($sql)->result_array();
         
         if($query) {
