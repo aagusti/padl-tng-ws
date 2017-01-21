@@ -124,7 +124,7 @@
             <li><a href="<?php echo site_url('api/bphtb/realisasi/awal/20160101/akhir/20160228/group/1'); ?>">Realisasi Perkecamatan</a> - defaulti JSON<br>
             <li><a href="<?php echo site_url('api/bphtb/realisasi/awal/20160101/akhir/20160228/group/2'); ?>">Realisasi Perkelurahan</a> - defaulti JSON<br>
             <li><a href="<?php echo site_url('api/bphtb/masuk/awal/20160101/akhir/20160228/group/2'); ?>">Berkas Masuk</a> - defaulti JSON<br>
-            <li><a href="<?php echo site_url('api/bphtb/keluarsasi/awal/20160101/akhir/20160228/group/2'); ?>">Berkas Keluar</a> - defaulti JSON<br>
+            <li><a href="<?php echo site_url('api/bphtb/keluar/awal/20160101/akhir/20160228/group/2'); ?>">Berkas Keluar</a> - defaulti JSON<br>
                 Parameter Input :
                             <ol>
                     <li>(awal) Periode Awal : 'YYYYMMDD'</li>
