@@ -354,4 +354,76 @@ class Bphtb extends REST_Controller {
                   ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
         }
     }
+    
+    public function masuk_get(){
+        if(!$this->get('awal')||!$this->get('akhir'))
+           $this->response([
+                    'status' => FALSE,
+                    'message' => 'Invalid Parameter'
+                  ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
+                
+        $awal = preg_replace("/[^0-9]/","",$this->get('awal'));
+        $akhir = preg_replace("/[^0-9]/","",$this->get('akhir'));
+        $query = Null;
+        $sql = "SELECT m.tahun||'.'||lpad(m.kode, 2, '0')||'.'||lpad(m.no_urut::text,6,'0')  no_kirim, 
+                p.nama ppat,  m.pengirim,  m.tgl_terima,  d.kd_propinsi||'.'||d.kd_dati2||'.'||
+                d.kd_kecamatan||'.'||d.kd_kelurahan||'.'||d.kd_blok||'.'||d.no_urut||'.'||d.kd_jns_op nop,
+                d.thn_pajak_sppt, d.nominal, s.tahun||'.'||lpad(s.kode,2,'0')||'.'||lpad(s.no_sspd::text,6,'0') no_bphtb
+            FROM 
+              bphtb.bphtb_berkas_in m, 
+              bphtb.bphtb_berkas_in_det d, 
+              bphtb.bphtb_ppat p, 
+              bphtb.bphtb_sspd s
+            WHERE 
+              m.id = d.berkas_in_id AND
+              m.ppat_id = p.id AND
+              d.sspd_id = s.id AND
+              TO_CHAR(m.tgl_terima,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'";   
+        
+        $query = $this->db->query($sql)->result_array();
+        
+        if($query) {
+            $ret = $query; 
+            $this->response($ret, 200); // 200 being the HTTP response code
+        } else {
+           $this->response([
+                    'status' => FALSE,
+                    'message' => 'Data Not Found'
+                  ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
+        }
+    }    
+    public function keluar_get(){
+        if(!$this->get('awal')||!$this->get('akhir'))
+           $this->response([
+                    'status' => FALSE,
+                    'message' => 'Invalid Parameter'
+                  ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
+                
+        $awal = preg_replace("/[^0-9]/","",$this->get('awal'));
+        $akhir = preg_replace("/[^0-9]/","",$this->get('akhir'));
+        $query = Null;
+        $sql = "SELECT m.tahun||lpad(m.kode,2,'0')||lpad(m.no_urut::text,6,'0') no_berkas,
+                    m.tgl_keluar, p.nama, m.penerima, count(*) jumlah, notes 
+                FROM 
+                  bphtb.bphtb_ppat p, 
+                  bphtb.bphtb_berkas_out m, 
+                  bphtb.bphtb_berkas_out_det d
+                WHERE 
+                  m.ppat_id = p.id AND
+                  m.id = d.berkas_out_id AND
+                  TO_CHAR(m.tgl_keluar,'YYYYMMDD') BETWEEN '$awal' AND '$akhir'   
+                GROUP BY 1,2,3,4,6";
+        
+        $query = $this->db->query($sql)->result_array();
+        
+        if($query) {
+            $ret = $query; 
+            $this->response($ret, 200); // 200 being the HTTP response code
+        } else {
+           $this->response([
+                    'status' => FALSE,
+                    'message' => 'Data Not Found'
+                  ], REST_Controller::HTTP_NOT_FOUND); // NOT_FOUND (404) being the HTTP response code
+        }
+    }    
 }

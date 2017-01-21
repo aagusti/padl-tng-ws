@@ -75,10 +75,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'bphtb',
-	'password' => '8phtb2016',
-    'database' => 'bphtb',
+	'hostname' => '192.168.56.1',
+	'username' => 'aagusti',
+	'password' => 'a',
+    	'database' => 'bphtb',
 	'dbdriver' => 'postgre',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
@@ -94,3 +94,4 @@ $db['default'] = array(
 	'failover' => array(),
 	'save_queries' => TRUE
 );
+#print_r ($db);
